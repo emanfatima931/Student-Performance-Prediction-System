@@ -1,0 +1,80 @@
+import pandas as pd
+import numpy as np
+
+# Step 1: Sample Data (you can replace it with real data)
+data = {
+    'attendance': [85, 78, 92, 65, 90, 72],
+    'study_hours': [10, 8, 12, 6, 15, 7],
+    'assignment_score': [80, 75, 85, 60, 90, 70],
+    'previous_grade': [4, 3, 4, 2, 4, 2],  # A=4, B=3, C=2, D=1, F=0
+    'final_grade': [75, 70, 85, 60, 90, 65]
+}
+df = pd.DataFrame(data)
+
+# Step 2: Split Data into Features (X) and Target (y)
+X = df[['attendance', 'study_hours', 'assignment_score', 'previous_grade']].values
+y = df['final_grade'].values
+
+# Step 3: Add a column of ones to X for the bias term
+X = np.c_[np.ones(X.shape[0]), X]
+
+# Step 4: Implement Linear Regression using the Normal Equation
+theta = np.linalg.inv(X.T @ X) @ (X.T @ y)
+
+# Function to convert letter grades to numeric values
+def grade_to_numeric(letter):
+    grades = {'A': 4, 'B': 3, 'C': 2, 'D': 1, 'F': 0}
+    return grades.get(letter.upper(), 0)
+
+# Function to categorize performance level
+def performance_level(grade):
+    if grade >= 85:
+        return "Excellent"
+    elif grade >= 70:
+        return "Good"
+    elif grade >= 50:
+        return "Average"
+    else:
+        return "Poor"
+
+# Function to convert percentage to letter grade
+def percentage_to_letter(percentage):
+    if percentage >= 85:
+        return 'A'
+    elif percentage >= 70:
+        return 'B'
+    elif percentage >= 50:
+        return 'C'
+    elif percentage >= 40:
+        return 'D'
+    else:
+        return 'F'
+
+# Step 5: Take user input for the new student
+print("Enter the student's details:")
+attendance = float(input("Attendance Percentage: "))
+study_hours = float(input("Study Hours per Week: "))
+assignment_score = float(input("Assignment Score (out of 100): "))
+
+# Ensure assignment score is valid
+if not (0 <= assignment_score <= 100):
+    print("Error: Assignment score must be between 0 and 100.")
+    exit()
+
+previous_grade = input("Previous Semester Grade (A, B, C, D, F): ")
+previous_grade_numeric = grade_to_numeric(previous_grade)
+
+# Step 6: Predict the final grade for the new student
+new_student = np.array([1, attendance, study_hours, assignment_score, previous_grade_numeric])
+predicted_grade = new_student @ theta
+
+# Ensure predicted grade does not exceed 100%
+predicted_grade = min(predicted_grade, 100)
+
+# Step 7: Display the results
+letter_grade = percentage_to_letter(predicted_grade)
+performance = performance_level(predicted_grade)
+
+print(f"\nPredicted Final Grade: {predicted_grade:.2f}%")
+print(f"Letter Grade: {letter_grade}")
+print(f"Performance Level: {performance}")
